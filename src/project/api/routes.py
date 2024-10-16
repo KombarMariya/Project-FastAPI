@@ -5,9 +5,11 @@ from project.infrastructure.postgres.repository.repo import (
     TypesOfMedicinesRepository,
     ReleaseFormsRepository,
     ManufacturersRepository,
-    DosagesRepository
+    DosagesRepository, RelatedProductsRepository, MedicinesRepository
 )
 from project.infrastructure.postgres.database import PostgresDatabase
+from project.schemas.medicines import MedicinesSchema
+from project.schemas.related_products import RelatedProductsSchema
 from project.schemas.types_of_medicines import TypesOfMedicinesSchema
 from project.schemas.release_forms import ReleaseFormsSchema
 from project.schemas.manufacturers import ManufacturersSchema
@@ -65,3 +67,29 @@ async def get_all_dosages() -> list[DosagesSchema]:
         all_dosages = await dosages_repo.get_all_dosages(session=session)
 
     return all_dosages
+
+# Эндпоинт для получения всех лекарств
+
+@router.get("/all_medicines", response_model=list[MedicinesSchema])
+async def get_all_medicines() -> list[MedicinesSchema]:
+    medicines_repo = MedicinesRepository()
+    database = PostgresDatabase()
+
+    async with database.session() as session:
+        await medicines_repo.check_connection(session=session)
+        all_medicines = await medicines_repo.get_all_medicines(session=session)
+
+    return all_medicines
+
+
+# Эндпоинт для получения всех сопутствующих товаров
+@router.get("/all_related_products", response_model=list[RelatedProductsSchema])
+async def get_all_related_products() -> list[RelatedProductsSchema]:
+    related_products_repo = RelatedProductsRepository()
+    database = PostgresDatabase()
+
+    async with database.session() as session:
+        await related_products_repo.check_connection(session=session)
+        all_related_products = await related_products_repo.get_all_related_products(session=session)
+
+    return all_related_products
