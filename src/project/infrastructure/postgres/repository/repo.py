@@ -4,8 +4,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 
 from project.schemas.clients import ClientsSchema
+from project.schemas.couriers import CouriersSchema
+from project.schemas.deliveries import DeliveriesSchema
 from project.schemas.medicines import MedicinesSchema
 from project.schemas.pharmacists import PharmacistsSchema
+from project.schemas.purchased_medicines import PurchasedMedicinesSchema
+from project.schemas.purchased_related_products import PurchasedRelatedProductsSchema
 from project.schemas.purchases import PurchasesSchema
 from project.schemas.related_products import RelatedProductsSchema
 from project.schemas.types_of_medicines import TypesOfMedicinesSchema
@@ -13,7 +17,8 @@ from project.schemas.release_forms import ReleaseFormsSchema
 from project.schemas.manufacturers import ManufacturersSchema
 from project.schemas.dosages import DosagesSchema
 from project.infrastructure.postgres.models import TypesOfMedicines, ReleaseForms, Manufacturers, Dosages, \
-    RelatedProducts, Medicines, Clients, Pharmacists, Purchases
+    RelatedProducts, Medicines, Clients, Pharmacists, Purchases, PurchasedMedicines, PurchasedRelatedProducts, Couriers, \
+    Deliveries
 
 from project.core.config import settings
 
@@ -142,3 +147,63 @@ class PurchasesRepository:
         query = f"select * from {settings.POSTGRES_SCHEMA}.purchases;"
         result = await session.execute(text(query))
         return [PurchasesSchema.model_validate(obj=record) for record in result.mappings().all()]
+
+
+
+class PurchasedMedicinesRepository:
+    _collection: Type[PurchasedMedicines] = PurchasedMedicines
+
+    async def check_connection(self, session: AsyncSession) -> bool:
+        query = "select 1;"
+        result = await session.scalar(text(query))
+        return True if result else False
+
+    async def get_all_purchased_medicines(self, session: AsyncSession) -> list[PurchasedMedicinesSchema]:
+        query = f"select * from {settings.POSTGRES_SCHEMA}.purchased_medicines;"
+        result = await session.execute(text(query))
+        return [PurchasedMedicinesSchema.model_validate(obj=record) for record in result.mappings().all()]
+
+
+
+
+class PurchasedRelatedProductsRepository:
+    _collection: Type[PurchasedRelatedProducts] = PurchasedRelatedProducts
+
+    async def check_connection(self, session: AsyncSession) -> bool:
+        query = "select 1;"
+        result = await session.scalar(text(query))
+        return True if result else False
+
+    async def get_all_purchased_related_products(self, session: AsyncSession) -> list[PurchasedRelatedProductsSchema]:
+        query = f"select * from {settings.POSTGRES_SCHEMA}.purchased_related_products;"
+        result = await session.execute(text(query))
+        return [PurchasedRelatedProductsSchema.model_validate(obj=record) for record in result.mappings().all()]
+
+
+
+class CouriersRepository:
+    _collection: Type[Couriers] = Couriers
+    async def check_connection(self, session: AsyncSession) -> bool:
+        query = "select 1;"
+        result = await session.scalar(text(query))
+        return True if result else False
+    async def get_all_couriers(self, session: AsyncSession) -> list[CouriersSchema]:
+        query = f"select * from {settings.POSTGRES_SCHEMA}.couriers;"
+        result = await session.execute(text(query))
+        return [CouriersSchema.model_validate(obj=record) for record in result.mappings().all()]
+
+
+class DeliveriesRepository:
+    _collection: Type[Deliveries] = Deliveries
+
+    async def check_connection(self, session: AsyncSession) -> bool:
+        query = "select 1;"
+        result = await session.scalar(text(query))
+        return True if result else False
+
+    async def get_all_deliveries(self, session: AsyncSession) -> list[DeliveriesSchema]:
+        query = f"select * from {settings.POSTGRES_SCHEMA}.deliveries;"
+        result = await session.execute(text(query))
+        return [DeliveriesSchema.model_validate(obj=record) for record in result.mappings().all()]
+
+

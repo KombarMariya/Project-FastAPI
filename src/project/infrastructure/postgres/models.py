@@ -62,6 +62,9 @@ class Medicines(Base):
     release_form: Mapped[ReleaseForms] = relationship("ReleaseForms", back_populates="medicines")
     manufacturer: Mapped[Manufacturers] = relationship("Manufacturers", back_populates="medicines")
     dosage: Mapped[Dosages] = relationship("Dosages", back_populates="medicines")
+    purchased_medicines: Mapped[list["PurchasedMedicines"]] = relationship("PurchasedMedicines",
+                                                                           back_populates="medicine")
+
 
 class RelatedProducts(Base):
     __tablename__ = "related_products"
@@ -71,6 +74,8 @@ class RelatedProducts(Base):
     price: Mapped[float] = mapped_column(nullable=False)
     quantity: Mapped[int] = mapped_column(nullable=False)
 
+    purchased_related_products: Mapped[list["PurchasedRelatedProducts"]] = relationship("PurchasedRelatedProducts",
+                                                                                        back_populates="related_product")
 
 
 class Pharmacists(Base):
@@ -106,6 +111,61 @@ class Purchases(Base):
     total_amount: Mapped[float] = mapped_column(nullable=False)
     date_time: Mapped[datetime] = mapped_column(nullable=False)
 
-    # Обратные отношения
     client: Mapped[Clients] = relationship("Clients", back_populates="purchases")
     pharmacist: Mapped[Pharmacists] = relationship("Pharmacists", back_populates="purchases")
+    delivery: Mapped["Deliveries"] = relationship("Deliveries", back_populates="purchase", uselist=False)
+
+class PurchasedMedicines(Base):
+    __tablename__ = "purchased_medicines"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    medicine_id: Mapped[int] = mapped_column(ForeignKey("medicines.id"), nullable=False)
+    quantity: Mapped[int] = mapped_column(nullable=False)
+    amount: Mapped[float] = mapped_column(nullable=False)
+    date_time: Mapped[datetime] = mapped_column(nullable=False)
+    purchase_id: Mapped[int] = mapped_column(ForeignKey("purchases.id"), nullable=False)
+
+    medicine = relationship("Medicines", back_populates="purchased_medicines")
+    purchase = relationship("Purchases", back_populates="purchased_medicines")
+
+
+class PurchasedRelatedProducts(Base):
+    __tablename__ = "purchased_related_products"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    related_product_id: Mapped[int] = mapped_column(ForeignKey("related_products.id"), nullable=False)
+    quantity: Mapped[int] = mapped_column(nullable=False)
+    amount: Mapped[float] = mapped_column(nullable=False)
+    date_time: Mapped[datetime] = mapped_column(nullable=False)
+    purchase_id: Mapped[int] = mapped_column(ForeignKey("purchases.id"), nullable=False)
+
+    related_product = relationship("RelatedProducts", back_populates="purchased_related_products")
+    purchase = relationship("Purchases", back_populates="purchased_related_products")
+
+
+class Couriers(Base):
+    __tablename__ = "couriers"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    last_name: Mapped[str] = mapped_column(nullable=False)
+    first_name: Mapped[str] = mapped_column(nullable=False)
+    middle_name: Mapped[str] = mapped_column(nullable=False)
+    birth_date: Mapped[date] = mapped_column(nullable=True)
+    passport: Mapped[str] = mapped_column(nullable=False)
+    phone: Mapped[str] = mapped_column(nullable=False)
+    transport: Mapped[str] = mapped_column(nullable=False)
+
+    deliveries: Mapped[list["Deliveries"]] = relationship("Deliveries", back_populates="courier")
+
+class Deliveries(Base):
+    __tablename__ = "deliveries"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    purchase_id: Mapped[int] = mapped_column(ForeignKey("purchases.id"), unique=True, nullable=False)
+    courier_id: Mapped[int] = mapped_column(ForeignKey("couriers.id"), nullable=False)
+    address: Mapped[str] = mapped_column(nullable=False)
+    delivery_date: Mapped[datetime] = mapped_column(nullable=True)
+    status: Mapped[str] = mapped_column(nullable=False)
+
+    purchase: Mapped["Purchases"] = relationship("Purchases", back_populates="delivery")
+    courier: Mapped["Couriers"] = relationship("Couriers", back_populates="deliveries")

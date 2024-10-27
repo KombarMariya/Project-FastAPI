@@ -6,12 +6,17 @@ from project.infrastructure.postgres.repository.repo import (
     ReleaseFormsRepository,
     ManufacturersRepository,
     DosagesRepository, RelatedProductsRepository, MedicinesRepository, ClientsRepository, PharmacistsRepository,
-    PurchasesRepository
+    PurchasesRepository, PurchasedMedicinesRepository, PurchasedRelatedProductsRepository, CouriersRepository,
+    DeliveriesRepository
 )
 from project.infrastructure.postgres.database import PostgresDatabase
 from project.schemas.clients import ClientsSchema
+from project.schemas.couriers import CouriersSchema
+from project.schemas.deliveries import DeliveriesSchema
 from project.schemas.medicines import MedicinesSchema
 from project.schemas.pharmacists import PharmacistsSchema
+from project.schemas.purchased_medicines import PurchasedMedicinesSchema
+from project.schemas.purchased_related_products import PurchasedRelatedProductsSchema
 from project.schemas.purchases import PurchasesSchema
 from project.schemas.related_products import RelatedProductsSchema
 from project.schemas.types_of_medicines import TypesOfMedicinesSchema
@@ -128,3 +133,43 @@ async def get_all_purchases() -> list[PurchasesSchema]:
         await purchases_repo.check_connection(session=session)
         all_purchases = await purchases_repo.get_all_purchases(session=session)
     return all_purchases
+
+# Эндпоинт для получения всех купленных лекарств
+@router.get("/all_purchased_medicines", response_model=list[PurchasedMedicinesSchema])
+async def get_all_purchased_medicines() -> list[PurchasedMedicinesSchema]:
+    purchased_meds_repo = PurchasedMedicinesRepository()
+    database = PostgresDatabase()
+    async with database.session() as session:
+        await purchased_meds_repo.check_connection(session=session)
+        all_purchased_meds = await purchased_meds_repo.get_all_purchased_medicines(session=session)
+    return all_purchased_meds
+
+# Эндпоинт для получения всех купленных сопутствующих товаров
+@router.get("/all_purchased_related_products", response_model=list[PurchasedRelatedProductsSchema])
+async def get_all_purchased_related_products() -> list[PurchasedRelatedProductsSchema]:
+    purchased_related_repo = PurchasedRelatedProductsRepository()
+    database = PostgresDatabase()
+    async with database.session() as session:
+        await purchased_related_repo.check_connection(session=session)
+        all_purchased_related = await purchased_related_repo.get_all_purchased_related_products(session=session)
+    return all_purchased_related
+
+# Эндпоинт для получения всех курьеров
+@router.get("/all_couriers", response_model=list[CouriersSchema])
+async def get_all_couriers() -> list[CouriersSchema]:
+    couriers_repo = CouriersRepository()
+    database = PostgresDatabase()
+    async with database.session() as session:
+        await couriers_repo.check_connection(session=session)
+        all_couriers = await couriers_repo.get_all_couriers(session=session)
+    return all_couriers
+
+# Эндпоинт для получения всех доставок
+@router.get("/all_deliveries", response_model=list[DeliveriesSchema])
+async def get_all_deliveries() -> list[DeliveriesSchema]:
+    deliveries_repo = DeliveriesRepository()
+    database = PostgresDatabase()
+    async with database.session() as session:
+        await deliveries_repo.check_connection(session=session)
+        all_deliveries = await deliveries_repo.get_all_deliveries(session=session)
+    return all_deliveries
